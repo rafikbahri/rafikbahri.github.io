@@ -1,0 +1,5 @@
+---
+- name: Deploy personal website to S3
+  hosts: ec2
+  roles: 
+    - s3deploy
