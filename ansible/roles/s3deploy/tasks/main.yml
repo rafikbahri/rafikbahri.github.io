@@ -3,7 +3,7 @@
   ansible.builtin.debug: 
     msg: Let's Gooo
 
-- name: Check bucket exist 
+- name: Check bucket exist
   delegate_to: localhost
   amazon.aws.s3_bucket:
     name: "{{ bucket_name }}"
