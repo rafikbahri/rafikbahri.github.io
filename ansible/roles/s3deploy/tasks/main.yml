@@ -6,5 +6,5 @@
 - name: Check bucket exist 
   delegate_to: localhost
   amazon.aws.s3_bucket:
-    name: rafikbahri
+    name: "{{ bucket_name }}"
     state: present
