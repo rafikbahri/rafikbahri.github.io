@@ -1,9 +1,7 @@
 #!/usr/bin/zsh
 
 ANSIBLE_DIR=ansible/
-ANSIBLE_REMOTE_USER=ec2-user
-ANSIBLE_REMOTE_SECRET_ACCESS_KEY=secrets/ssh/ansible-ec2s.pem
 
 cd $ANSIBLE_DIR
 
-ansible-playbook -u $ANSIBLE_REMOTE_USER --private-key $ANSIBLE_REMOTE_SECRET_ACCESS_KEY deploy.yml
+ansible-playbook $@ deploy.yml
