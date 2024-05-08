@@ -2,6 +2,9 @@
 
 ANSIBLE_DIR=ansible/
 
+echo "Static code analysis"
+tests/static/ansible-lint
+
 cd $ANSIBLE_DIR
 
 ansible-playbook $@ deploy.yml
