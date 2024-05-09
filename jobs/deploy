@@ -1,9 +1,11 @@
 #!/usr/bin/zsh
 
-ANSIBLE_DIR=ansible/
+
 
 echo "Static code analysis"
 tests/static/ansible-lint
+
+ANSIBLE_DIR=ansible/
 
 cd $ANSIBLE_DIR
 
