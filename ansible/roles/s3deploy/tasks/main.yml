@@ -1,3 +1,4 @@
+# TODO: role documentation + prepar for galaxy publication
 ---
 - name: Check bucket exist
   amazon.aws.s3_bucket:

@@ -1,3 +1,5 @@
+###
+# TODO: HTTP(S) test
 ---
 - name: Static website public access
   hosts: localhost

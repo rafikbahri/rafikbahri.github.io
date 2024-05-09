@@ -1,5 +1,8 @@
 ###
-# TODO: Replace localhost by ec2 when node has all requirements (python3-botocore3...)
+# TODO:
+# - Replace localhost by ec2 when node has all requirements (python3-botocore3...): AMI custom image
+# - Turn HTTPS on
+# - Cleanup warnings
 ---
 - name: Deploy personal website to S3
   hosts: localhost

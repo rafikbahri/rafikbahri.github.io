@@ -1,7 +1,5 @@
 #!/usr/bin/zsh
 
-
-
 echo "Static code analysis"
 tests/static/ansible-lint
 
