@@ -1,0 +1,10 @@
+#!/usr/bin/zsh
+
+echo "Static code analysis"
+tests/static/ansible-lint
+
+ANSIBLE_DIR=ansible/
+
+cd $ANSIBLE_DIR
+
+ansible-playbook $@ deploy.yml

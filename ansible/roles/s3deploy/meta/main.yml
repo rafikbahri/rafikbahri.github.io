@@ -1,0 +1,19 @@
+galaxy_info:
+  author: Rafik Bahri
+  description: Deploy static website on S3
+  company: Rafik Bahri
+
+  license: TBD
+
+  min_ansible_version: 2.1
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - 22.04
+
+  galaxy_tags:
+    - aws
+    - s3
+    - web
+    - static

@@ -1,0 +1,23 @@
+###
+# TODO: HTTP(S) test
+---
+- name: Static website public access
+  hosts: localhost
+  tasks:
+    - name: Get bucket infos
+      amazon.aws.s3_bucket_info:
+        name_filter: rafikbahri
+        bucket_facts:
+          bucket_policy_status: true
+          bucket_website: true
+          public_access_block: true
+      register: _result
+
+    - name: Assert
+      ansible.builtin.assert:
+        that:
+          - _result.buckets[0].bucket_policy_status.PolicyStatus.IsPublic                               == true
+          - _result.buckets[0].public_access_block.PublicAccessBlockConfiguration.BlockPublicAcls       == false
+          - _result.buckets[0].public_access_block.PublicAccessBlockConfiguration.IgnorePublicAcls      == false
+          - _result.buckets[0].public_access_block.PublicAccessBlockConfiguration.BlockPublicPolicy     == false
+          - _result.buckets[0].public_access_block.PublicAccessBlockConfiguration.RestrictPublicBuckets == false

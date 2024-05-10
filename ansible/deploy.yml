@@ -1,0 +1,11 @@
+###
+# TODO:
+# - Replace localhost by ec2 when node has all requirements (python3-botocore3...): AMI custom image
+# - Turn HTTPS on
+# - Cleanup warnings
+# - EventBridge with EC2 rule to send notif to SNS to send email whenever EC2 stopped, terminated
+---
+- name: Deploy personal website to S3
+  hosts: localhost
+  roles:
+    - s3deploy

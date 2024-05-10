@@ -1,0 +1,24 @@
+# TODO: role documentation + prepar for galaxy publication
+---
+- name: Check bucket exist
+  amazon.aws.s3_bucket:
+    name: "{{ bucket_name }}"
+    state: present
+    public_access:
+      block_public_policy: false
+      ignore_public_acls: false
+      block_public_acls: false
+      restrict_public_buckets: false
+    policy: "{{ lookup('ansible.builtin.template', 'policy.json.j2') | to_json }}"
+    tags: "{{ bucket_tags }}"
+
+- name: Deploy resources
+  community.aws.s3_sync:
+    bucket: "{{ bucket_name }}"
+    file_root: "{{ bucket_local_website_path }}"
+
+- name: Enable S3 website hosting
+  community.aws.s3_website:
+    name: "{{ bucket_name }}"
+    state: present
+    suffix: index.html
