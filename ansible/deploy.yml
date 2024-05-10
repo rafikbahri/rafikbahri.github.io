@@ -8,4 +8,5 @@
 - name: Deploy personal website to S3
   hosts: localhost
   roles:
-    - s3deploy
+    - bastion
+    # - s3deploy

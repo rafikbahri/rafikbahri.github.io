@@ -1,0 +1,28 @@
+---
+- name: Create instance
+  amazon.aws.ec2_instance:
+    name: bastion
+    state: present
+    instance_type: t2.micro
+    key_name: ansible-ec2s
+    security_group: default
+    network:
+      assign_public_ip: true
+    image_id: ami-0111c5910da90c2a7
+    wait: true
+    tags:
+      role: bastion
+      layer: infra
+      tool: ansible
+  register: _instances
+
+- name: Debug
+  debug: 
+    msg: "Instances: {{ _instances.instances[0].network_interfaces[0].association.public_ip }}"
+
+# - name: Add Public IP to etc hosts
+#   become: true
+#   ansible.builtin.lineinfile: 
+#     dest: /etc/hosts
+#     state: present
+#     line: "bastion {{ _instances.instances[0].network_interfaces[0].association.public_ip }}"

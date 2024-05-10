@@ -13,6 +13,7 @@ The following architecture illustrates the idea behind this project.
 
 TODO
 ----
+**Build SSH config (hosts, keys).. NO use of /etc/hosts...**
 Fix Github Pages root directory
 Github Actions
 AWS CI?
