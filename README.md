@@ -1,7 +1,7 @@
 rafikbahri.github.io
 ====================
 
-Personal website hosted on AWS
+Personal website hosted on [AWS](rafikbahri.s3-website.eu-west-3.amazonaws.com) and [Github Pages](rafikbahri.github.io).
 
 Project architecture
 --------------------
