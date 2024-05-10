@@ -1,6 +1,0 @@
----
-bucket_name: rafikbahri
-bucket_tags:
-  tier: web
-  web: static
-bucket_local_website_path: ../web
