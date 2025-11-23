@@ -1,0 +1,397 @@
+---
+title: "Bastion Architecture on AWS using Terraform"
+description: "IaC, Terraform, AWS."
+date: "2025-11-23"
+---
+
+import Callout from "@/components/Callout.astro";
+
+---
+
+## Introduction
+
+In this article, we will discuss what a Bastion architecture is, the challenges it solves, and we will have fun implementing it on AWS using Terraform.
+
+We will also see how to have a backup in case of loss of the Bastion host, using AWS Session Manager.
+
+This article is made to be light and fun. It will be enough to introduce you to secure cloud architectures.
+
+This article contains an intermediate-level lab, we assume that you have knowledge of AWS (VPC, EC2, Subnets..) and Terraform, and are comfortable with SSH.
+
+---
+
+## Pre-requisites
+
+Before we dive into the main subject, please make sure you have the **required** tools for this lab.
+
+- AWS account and Access Keys
+- AWS CLI
+- Terraform
+- SSH CLI and SSH keypair
+
+---
+
+## Challanges
+
+In a cloud environment, securing resources is the most crucial part of building architectures.
+Imagine working in a multi-billion company and having an EC2 instance hacked and secret data used. T
+he company’s stocks will instantly crash, starting a crisis and probably putting an end to this latter.
+
+Now that we have a real impact of what an insecure cloud architecture would make to a company, let’s take it into a smaller context.
+
+Say you have a personal AWS VPC, with 3 EC2 instances. The instances are in a public subnet, you access them using SSH (via public internet) to make development and maintenance operations.
+
+One day, you started to observe intrusion attempts made by strange sources. So you decide to put these instances in a private subnet that’s not accessible from the outside world. Now your EC2 instances are perfectly secure, but… How would you access them? You lost your access.
+
+Here comes the role of a Bastion host.
+
+A Bastion host is a specially configured server designed to act as a gateway between an untrusted network, in our case the internet, and a private trusted network, in our case AWS private subnets.
+
+---
+
+## Key features
+
+Bastion's key features are:
+
+- Single Entry Point: channels all external traffic through its secure gateway.
+- Hardened Security: minimal services installed to reduce vulnerabilities, including firewalls, intrusion detection softwares, and authentication systems.
+- Access Control: It verifies and limits access to authorized users.
+- Audit and Monitoring: Logs and monitors incoming and outgoing traffic.
+
+---
+
+## Architecture
+
+Let’s discuss the architecture component by component
+
+- 1 VPC main-vpc
+- 1 private subnet with the CIDR 192.168.1.15 private-instances-subnet
+- 3 EC2 instances private\{001,002,003\} in the subnet private-instances-subnet
+- 1 public subnet CIDR 192.168.1.16 bastions-subnet
+- 1 EC2 instance bastion001 in the subnet bastions-subnet
+- 1 Internet gateway main-igw
+- 1 NAT gateway main-nat-gateway
+- 1 Local desktop
+
+![Architecture](/00-archictecture.png)
+
+---
+
+## Implementation
+
+I've prepared for you all the necessary Terraform configuration and other resources, so we can focus on understanding them.
+
+The code is located on GitHub `aws-bastion-architecture`.
+
+Clone the repository
+
+```bash
+git clone git@github.com:rafikbahri/aws-bastion-architecture.git
+```
+
+The project structure is as follow
+
+```text
+# --- Project Structure ---
+bastion.tf # bastion configuration (subnet, instances, sg..)
+main.tf # defines the provider (aws)
+outputs.tf # terraform outputs (bastions public ips, private instances ips..)
+private.tf # private instances configuration (subnet, instances, sg..)
+ssh-config.tf # generate ssh config file located in .ssh/config
+ssm.tf # aws session manager configuration (sg..)
+variables.tf # global variables
+vpc.tf # vpc configuration (subnets, sg, vpc, igw...)
+[.config]
+    └── cloudinit_user_data.yaml # contains you public ssh key
+[modules] # custom terraform modules
+    ├── [aws-node] # encapsulates an ec2 instnace/node configuration
+        ├── README.md
+        ├── main.tf
+        ├── outputs.tf
+        ├── variables.tf
+        └── versions.tf
+    ├── [aws-private-subnet] # encapsulates a private subnet configuration
+        ├── README.md
+        ├── main.tf
+        ├── outputs.tf
+        ├── variables.tf
+        └── versions.tf
+    ├── [aws-public-subnet] # encapsulates a public subnet configuration
+        ├── README.md
+        ├── main.tf
+        ├── outputs.tf
+        ├── variables.tf
+        └── versions.tf
+    ├── [aws-sg] # encapsulates a security group configuration
+        ├── README.md
+        ├── main.tf
+        ├── outputs.tf
+        ├── variables.tf
+        └── versions.tf
+    └── [aws-vpc] # encapsulates a vpc configuration
+        ├── README.md
+        ├── main.tf
+        ├── outputs.tf
+        ├── variables.tf
+        └── versions.tf
+```
+
+We'll explain the major important parts of the project, enjoy reading the code on your side and try to understand every little bit of it.  
+
+Let's dive deep into the `bastion.tf` configuration file.
+In the first part, we define the `bastions-subnet` that uses a module to create an AWS public subnet inside the VPC we create using `vpc.tf`.
+
+Then we define a group of instances, in our case var.bastion_servers_count is equal to 1. Check the variables.tf file for all the details on the values of the variables.
+We can scale the server count to 3, providing the private_ips which is a list of IPs inside the subnet, which has a CIDR of 192.168.15.0/24.
+The user_data_file is a crucial part of this configuration since it has our public SSH key. This file has a configuration Shell script that is run during the startup of the EC2 instances.
+You'll need to override the value of SSH_PUBLIC_KEY inside the .config/cloudinit_user_data.yaml file with your own SSH public key.
+The bastion host has 2 security groups: module.sg-admin-bastions.sg_id, module.sg-admin.sg_id.
+
+```hcl
+module "bastions-subnet" {
+  source                         = "./modules/aws-public-subnet"
+  name                           = "bastion-subnet"
+  vpc_id                         = module.main-vpc.vpc_id
+  availability_zone              = "eu-west-3a"
+  cidr_block                     = var.bastions_subnet_cidr
+  map_public_ip_on_launch        = true
+  public_internet_route_table_id = module.main-vpc.public_internet_route_table_id
+  has_internet_access            = true
+  tags = {
+    group = "bastions"
+  }
+}
+
+module "bastions" {
+  source          = "./modules/aws-node"
+  server_count    = var.bastion_servers_count
+  server_prefix   = "bastion"
+  ami_id          = "ami-0546127e0cf2c6498"
+  instance_type   = "t2.micro"
+  vpc_id          = module.main-vpc.vpc_id
+  subnet_id       = module.bastions-subnet.subnet_id
+  private_ips     = [["192.168.15.11"], ["192.168.15.12"], ["192.168.15.13"]]
+  create_key      = false
+  security_groups = [module.sg-admin-bastions.sg_id, module.sg-admin.sg_id]
+  user_data_file  = ".config/cloudinit_user_data.yaml"
+  tags = {
+    purpose     = "bastion"
+    description = "Serves for SSH access"
+    component   = "infra"
+  }
+}
+```
+
+Let's understand the security groups.
+
+```hcl
+module "sg-admin-bastions" {
+  source      = "./modules/aws-sg"
+  name        = "sg_admin_bastions"
+  description = "Admin security group"
+  vpc_id      = module.main-vpc.vpc_id
+  ingress_rules = [
+    {
+      description = "SSH only from admin IP addresses."
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = [
+        "88.178.215.32/32" # My public IP address 
+      ]
+      # Required attribues: https://stackoverflow.com/a/69080432/5684155
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      security_groups  = []
+      self             = false
+    },
+    {
+      description = "Ping inside VPC."
+      from_port   = 0
+      to_port     = 0
+      protocol    = "icmp"
+      cidr_blocks = ["192.168.0.0/16"]
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      security_groups  = []
+      self             = false
+    }
+  ]
+  egress_rules = [
+    {
+      description      = "Allow all outbound traffic."
+      from_port        = 0
+      to_port          = 0
+      protocol         = "-1"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      security_groups  = []
+      self             = false
+    }
+  ]
+}
+
+module "sg-admin" {
+  source      = "./modules/aws-sg"
+  name        = "sg_admin"
+  description = "Admin security group incoming only from bastions"
+  vpc_id      = module.main-vpc.vpc_id
+  ingress_rules = [
+    {
+      description = "SSH using EC2 instance connect (from AWS console)."
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = [
+        "35.180.112.80/29" # EC2 instance connect service IPs in my region https://ip-ranges.amazonaws.com/ip-ranges.json
+      ]
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      security_groups  = [module.sg-admin-bastions.sg_id]
+      self             = false
+    },
+    {
+      description = "Ping inside VPC."
+      from_port   = -1
+      to_port     = -1
+      protocol    = "icmp"
+      cidr_blocks = ["192.168.0.0/16"]
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      security_groups  = []
+      self             = false
+    }
+  ]
+  egress_rules = [
+    {
+      description      = "Allow all outbound traffic."
+      from_port        = 0
+      to_port          = 0
+      protocol         = "-1"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      security_groups  = []
+      self             = false
+    }
+  ]
+}
+```
+
+sg-admin-bastions allows SSH access to the bastion host only from my public IP address. So you'll need to change that value by your own public IP address.
+
+sg-admin allows EC2 Instance Connect as a backup method in case we lose our SSH keys. (Totally optional but it's a nice facility in this architecture)
+
+Now let's understand the private instances configuration
+
+```hcl
+module "private-instances-subnet" {
+  source              = "./modules/aws-private-subnet"
+  name                = "private-instances-subnet"
+  vpc_id              = module.main-vpc.vpc_id
+  availability_zone   = "eu-west-3a"
+  cidr_block          = var.private_instances_subnet_cidr
+  public_subnet_id    = module.bastions-subnet.subnet_id
+  has_internet_access = true
+  tags = {
+    kind = "private"
+  }
+}
+
+module "private-instances" {
+  source          = "./modules/aws-node"
+  server_count    = var.private_instances_count
+  server_prefix   = "private"
+  ami_id          = "ami-0546127e0cf2c6498"
+  instance_type   = "t2.micro"
+  vpc_id          = module.main-vpc.vpc_id
+  subnet_id       = module.private-instances-subnet.subnet_id
+  private_ips     = [["192.168.16.11"], ["192.168.16.12"], ["192.168.16.13"]]
+  create_key      = false
+  security_groups = [module.sg-admin.sg_id]
+  user_data_file  = ".config/cloudinit_user_data.yaml"
+  tags = {
+    kind = "private"
+  }
+}
+```
+
+This is a typical configuration, we define a subnet and a group of nodes/instances. 
+We initialize the EC2 instances with the .config/cloudinit_user_data.yaml and we configure security groups to use module.sg-admin.sg_id so we only accept SSH from the Bastion host.
+
+Lastly, before we attack the practical part, let's talk about ssm.tf.
+This file configures AWS Session Manager for all of our EC2 instances.
+
+Session Manager is a service that gives us access to EC2 instances without the need for SSH.
+It's a great backup method if we lose our SSH keys or Bastion host.
+Initialize Terraform resources
+
+```bash
+terraform init
+```
+
+It's a good practice to generate a Terraform plan and read it before applying the configuration. Let's go ahead and run
+
+```bash
+terraform plan -out=tfplan
+```
+
+Once we are sure of our configuration, we can go ahead and apply it
+
+```bash
+terraform apply "tfplan"
+```
+
+<Callout type="info">
+  This command will run the plan without asking for confirmation 
+</Callout>
+
+
+---
+
+## Test
+
+On your AWS Console, open *EC2 > Instances (Running)*
+
+![EC2 Running](/00-ec2-running.png)
+
+We can see that only the bastion host bastion001 has a Public IPv4.  
+Test your SSH access to the Bastion host
+
+```bash
+ssh -F .ssh/config ec2-user@bastion001
+```
+
+Test your SSH access to a private instance
+
+```bash
+ssh -F .ssh/config ec2-user@private001
+```
+
+You should have a similar output to
+
+![SSH](/00-ssh.png)
+
+Go ahead and test your access using AWS Session Manager as well.  
+To do so, choose an *EC2 instance, then Connect > Session Manager*
+
+![EC2 Connect](/00-ec2-connect-1.png)
+
+Then
+
+![EC2 Connect SM](/00-ec2-connect-2.png)
+
+And 
+
+![EC2 Session Manager](/00-ec2-connect-sm.png)
+
+## Conclusion
+
+We understood what a Bastion host is, its challenges, and key features.  
+
+We also saw how to implement a typical Bastion host architecture on AWS and have a backup thanks to AWS Session Manager, all this using the famous Terraform.  
+
+I hope you enjoyed this article, feel free to give me your feedback and whether you want me to make similar articles on other Cloud architectures on AWS using Terraform.  
+
+Thanks a lot, see you in other tech articles!
