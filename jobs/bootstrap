@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -eux -o pipefail
+
+cd infra/bootstrap
+
+terraform init -upgrade
+terraform plan -out=tfplan -var-file=prod.tfvars
+terraform apply tfplan
