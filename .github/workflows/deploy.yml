@@ -7,6 +7,11 @@ on:
       - master
   workflow_dispatch:
 
+env:
+  MAIN_BRANCH_NAME: master
+  CF_PROJECT_NAME: rafikbahri-com
+  BUILD_DIRECTORY: dist
+
 jobs:
   deploy:
     runs-on: ubuntu-24.04
@@ -35,7 +40,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: rafikbahri-com
-          directory: dist
+          projectName: ${{ env.CF_PROJECT_NAME }}
+          directory: ${{ env.BUILD_DIRECTORY }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: ${{ env.MAIN_BRANCH_NAME }}
