@@ -7,7 +7,11 @@ on:
       - master
   workflow_dispatch:
 
+env:
+  MAIN_BRANCH_NAME: master
+
 jobs:
+
   deploy:
     runs-on: ubuntu-24.04
     permissions:
@@ -38,4 +42,4 @@ jobs:
           projectName: rafikbahri-com
           directory: dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: ${{ env.MAIN_BRANCH_NAME }}
