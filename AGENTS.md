@@ -59,6 +59,7 @@ Key points:
 
 - Routing is file-based. A blog entry at `src/content/blog/00-bastion-aws-tf/index.mdx` is served at `/blog/00-bastion-aws-tf/`.
 - Every listing page (home, blog, tags, RSS, prev/next navigation) filters out entries with `draft: true`.
+- Article comments use [Giscus](https://giscus.app) (`src/components/Giscus.astro`): one GitHub Discussion per article in the "Announcements" category of `rafikbahri/rafikbahri.github.io`, matched by page path. This requires Discussions enabled on the repo and the Giscus GitHub App installed on it; otherwise the widget shows "github.com refused to connect".
 - The search index is generated at build time by `astro-pagefind` into `dist/pagefind/`. `public/pagefind/` is a stale generated leftover; do not edit it by hand.
 
 ## Deployment
