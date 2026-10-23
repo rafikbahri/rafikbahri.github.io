@@ -19,6 +19,7 @@ Always run `npm run build` before committing: it is exactly what CI runs, and it
 - Never commit directly to `master` (every push to it deploys to production). Work on a branch, e.g. `docs/...`, `fix/...`, `feat/...`.
 - Commit messages are short, one line, in Conventional Commits style: `<type>: <summary>`, e.g. `fix: Set site URL to rafikbahri.com`, `docs: Add AGENTS.md`, `ci: ...`, `feat: ...`.
 - Do not add `Co-Authored-By` trailers or any other attribution lines to commits.
+- Use the `rafikbahri` GitHub account for `gh` and pushes (this machine also has a work account). Check with `gh auth status` and switch with `gh auth switch --user rafikbahri` if needed.
 
 ## Project structure
 
