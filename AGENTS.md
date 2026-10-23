@@ -1,7 +1,7 @@
 # AGENTS.md
 
-Personal blog of Rafik Bahri, served at **https://rafikbahri.com** (and `www.rafikbahri.com`).
-It is a static [Astro 5](https://astro.build) site (based on the *astro-micro* theme) with MDX, Tailwind CSS 4 and Pagefind search, hosted on **Cloudflare Pages**.
+Personal blog of Rafik Bahri, served at **https://rafikbahri.com** (and `www.rafikbahri.com`), mirrored at **https://rafikbahri.github.io**.
+It is a static [Astro 5](https://astro.build) site (based on the *astro-micro* theme) with MDX, Tailwind CSS 4 and Pagefind search, hosted on **Cloudflare Pages** and **GitHub Pages**.
 
 ## Commands
 
@@ -63,6 +63,7 @@ Key points:
 ## Deployment
 
 Production is **Cloudflare Pages**, project `rafikbahri-com`, production branch `master`.
+The same build is mirrored to **GitHub Pages** (https://rafikbahri.github.io). Its canonical URLs point to `rafikbahri.com` (the `site` setting), so search engines treat Cloudflare as the primary.
 
 ### Continuous deployment (normal path)
 
@@ -72,7 +73,12 @@ Production is **Cloudflare Pages**, project `rafikbahri-com`, production branch 
 - manual trigger (`workflow_dispatch`)
 - a yearly cron on January 1st (rebuilds so the footer copyright year stays current)
 
-Steps: checkout → Node 25 → `npm ci` → `npm run build` → `wrangler pages deploy dist --project-name=rafikbahri-com --branch=master` via `cloudflare/wrangler-action@v4`.
+Jobs:
+
+1. `deploy`: checkout → Node 25 → `npm ci` → `npm run build` → `wrangler pages deploy dist --project-name=rafikbahri-com --branch=master` via `cloudflare/wrangler-action@v4` → upload `dist/` as the GitHub Pages artifact.
+2. `deploy-github-pages` (runs only if `deploy` succeeded, so both sites stay identical): publishes that artifact with `actions/deploy-pages` to the `github-pages` environment.
+
+GitHub Pages must stay set to **Source: GitHub Actions** (`build_type: workflow`). In the default "Deploy from a branch" mode, GitHub runs its own Jekyll build on `master`, which cannot build Astro and fails (`pages-build-deployment`).
 
 Required GitHub repository secrets:
 
