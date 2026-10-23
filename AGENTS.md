@@ -21,6 +21,7 @@ Always run `npm run build` before committing: it is exactly what CI runs, and it
 - Do not add `Co-Authored-By` trailers or any other attribution lines to commits, and never add "Generated with Claude Code" (or similar) to pull request descriptions.
 - Commit as `Rafik Bahri <rafikbahri.insat@gmail.com>`. The global git config uses a work email that is not linked to the `rafikbahri` account, so this repo sets `user.email` in its local `.git/config`; check with `git config user.email` in a fresh clone.
 - Commits must be GPG-signed.
+- Pin every GitHub Action in `.github/workflows/` to a full commit SHA with the version as a comment, e.g. `actions/checkout@<40-char sha> # v7.0.1`. Never use a bare tag like `@v7`. Resolve the SHA with `gh api repos/<owner>/<repo>/git/ref/tags/<tag>` (for annotated tags, dereference via `git/tags/<sha>`).
 - Use the `rafikbahri` GitHub account for `gh` and pushes (this machine also has a work account). Check with `gh auth status` and switch with `gh auth switch --user rafikbahri` if needed.
 - The default SSH key authenticates as the work account, so `git push` to the SSH `origin` is denied. Push over HTTPS with the `gh` credentials instead:
 
@@ -75,7 +76,7 @@ The same build is mirrored to **GitHub Pages** (https://rafikbahri.github.io). I
 
 Jobs:
 
-1. `deploy`: checkout → Node 25 → `npm ci` → `npm run build` → `wrangler pages deploy dist --project-name=rafikbahri-com --branch=master` via `cloudflare/wrangler-action@v4` → upload `dist/` as the GitHub Pages artifact.
+1. `deploy`: checkout → Node 25 → `npm ci` → `npm run build` → `wrangler pages deploy dist --project-name=rafikbahri-com --branch=master` via `cloudflare/wrangler-action` → upload `dist/` as the GitHub Pages artifact.
 2. `deploy-github-pages` (runs only if `deploy` succeeded, so both sites stay identical): publishes that artifact with `actions/deploy-pages` to the `github-pages` environment.
 
 GitHub Pages must stay set to **Source: GitHub Actions** (`build_type: workflow`). In the default "Deploy from a branch" mode, GitHub runs its own Jekyll build on `master`, which cannot build Astro and fails (`pages-build-deployment`).
