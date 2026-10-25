@@ -1,0 +1,198 @@
+{
+  // Renovate keeps the three ecosystems that exist in this repo current:
+  // npm (package.json / package-lock.json), github-actions (the SHA pins in
+  // deploy.yml and smoke.yml) and terraform (infra/bootstrap). Renovate finds
+  // all three by scanning the repo, so there is no directory list to keep in
+  // sync with the project layout.
+  //
+  // Everything lands in one weekly sitting. Minor and patch updates are
+  // grouped per ecosystem so a routine week is three PRs rather than a dozen.
+  // Majors are never grouped: each one deserves its own review.
+  //
+  // Nothing automerges. Every PR is reviewed and merged by hand, and merging
+  // to master deploys to production.
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+
+  extends: [
+    'config:recommended',
+    // Any action added later is pinned to a digest automatically, matching the
+    // convention the workflows already follow by hand.
+    'helpers:pinGitHubActionDigests',
+  ],
+
+  timezone: 'Europe/Paris',
+  // Monday morning. Cron only, minutes must be '*': Monday, 06:00-08:59 Paris.
+  schedule: ['* 6-8 * * 1'],
+
+  // The dashboard is the reason this config can stay quiet without anything
+  // rotting invisibly. Updates that are deliberately not raised as PRs (see
+  // the deferred majors below) are still listed there, with a checkbox that
+  // opens the PR on demand.
+  dependencyDashboard: true,
+  dependencyDashboardTitle: 'Dependency dashboard',
+
+  prConcurrentLimit: 5,
+  prHourlyLimit: 2,
+  labels: ['dependencies'],
+
+  semanticCommits: 'enabled',
+  semanticCommitScope: 'deps',
+
+  // Refresh the whole lockfile monthly, independently of whether any direct
+  // dependency moved. Transitive dependencies are where this repo actually
+  // went stale - direct deps were current while the lockfile was not.
+  lockFileMaintenance: {
+    enabled: true,
+    schedule: ['* 6-8 1 * *'],
+    semanticCommitType: 'chore',
+  },
+
+  // Security fixes skip the Monday window and the release-age delay, and are
+  // never held behind dashboard approval - including for the packages whose
+  // routine majors are deferred below.
+  vulnerabilityAlerts: {
+    enabled: true,
+    schedule: [],
+    minimumReleaseAge: null,
+    dependencyDashboardApproval: false,
+    labels: ['dependencies', 'security'],
+  },
+  // Also raise fixes for advisories that are in the OSV database but have not
+  // been mirrored into a GitHub Dependabot alert.
+  osvVulnerabilityAlerts: true,
+
+  packageRules: [
+    // -----------------------------------------------------------------
+    // Site dependencies
+    // -----------------------------------------------------------------
+    {
+      description: 'npm: group routine minor and patch updates into one PR.',
+      matchManagers: ['npm'],
+      matchUpdateTypes: ['minor', 'patch', 'pin', 'digest'],
+      groupName: 'npm minor and patch',
+      semanticCommitType: 'chore',
+    },
+    {
+      description:
+        'npm: bump the caret range in package.json as well as the lockfile, so package.json reflects what is actually installed.',
+      matchManagers: ['npm'],
+      rangeStrategy: 'bump',
+    },
+    {
+      description:
+        'npm: wait a few days before adopting a release, so a pulled or compromised publish is not picked up within the hour.',
+      matchManagers: ['npm'],
+      minimumReleaseAge: '5 days',
+    },
+    {
+      description:
+        'npm: a minor bump of a pre-1.0 package can break. Keep those out of the grouped PR so they are reviewed on their own.',
+      matchManagers: ['npm'],
+      matchCurrentVersion: '<1.0.0',
+      matchUpdateTypes: ['minor'],
+      groupName: null,
+      semanticCommitType: 'chore',
+    },
+    {
+      description: 'npm: majors are reviewed one at a time, never grouped.',
+      matchManagers: ['npm'],
+      matchUpdateTypes: ['major'],
+      groupName: null,
+      semanticCommitType: 'chore',
+      labels: ['dependencies', 'major'],
+    },
+
+    // -----------------------------------------------------------------
+    // Deferred majors
+    //
+    // Each of these has a major waiting upstream today and would open a PR
+    // the day this merges. They are deferred decisions, not oversights, so
+    // they sit behind dashboard approval instead: Renovate lists them on the
+    // dependency dashboard and opens the PR when the box is ticked.
+    //
+    // This is deliberately not an `ignore`. An ignore would also suppress
+    // security fixes for these packages; dashboard approval does not - the
+    // `vulnerabilityAlerts` block above overrides it.
+    //
+    // Tick the box on the dashboard when the upgrade is actually scheduled,
+    // then delete the matching rule here.
+    // -----------------------------------------------------------------
+    {
+      description:
+        'astro 5 -> 7: two majors of breaking changes across content collections, the adapter API and the image service. Deferred (RAF-3/RAF-4).',
+      matchManagers: ['npm'],
+      matchPackageNames: ['astro'],
+      matchUpdateTypes: ['major'],
+      dependencyDashboardApproval: true,
+    },
+    {
+      description:
+        '@astrojs/mdx 4 -> 8: coupled to the Astro major, cannot be taken independently. Deferred with it.',
+      matchManagers: ['npm'],
+      matchPackageNames: ['@astrojs/mdx'],
+      matchUpdateTypes: ['major'],
+      dependencyDashboardApproval: true,
+    },
+    {
+      description:
+        'astro-pagefind 1 -> 2: wires the search index into the Astro build, so it is coupled to the Astro major. Deferred with it.',
+      matchManagers: ['npm'],
+      matchPackageNames: ['astro-pagefind'],
+      matchUpdateTypes: ['major'],
+      dependencyDashboardApproval: true,
+    },
+    {
+      description:
+        'typescript 5 -> 7: the 7.x native port changes compiler behaviour, and `astro check` runs in the build path, so a regression breaks deploys. Deferred.',
+      matchManagers: ['npm'],
+      matchPackageNames: ['typescript'],
+      matchUpdateTypes: ['major'],
+      dependencyDashboardApproval: true,
+    },
+
+    // -----------------------------------------------------------------
+    // Workflow actions
+    //
+    // deploy.yml and smoke.yml pin every action to a full commit SHA, which
+    // is good supply-chain hygiene but has no staleness signal of its own: a
+    // pinned SHA never announces that a newer one exists. Renovate bumps the
+    // SHA and the `# vX.Y.Z` comment next to it together.
+    // -----------------------------------------------------------------
+    {
+      description: 'Actions: group routine minor and patch updates into one PR.',
+      matchManagers: ['github-actions'],
+      matchUpdateTypes: ['minor', 'patch', 'pin', 'digest'],
+      groupName: 'github-actions minor and patch',
+      semanticCommitType: 'ci',
+    },
+    {
+      description: 'Actions: majors are reviewed one at a time.',
+      matchManagers: ['github-actions'],
+      matchUpdateTypes: ['major'],
+      groupName: null,
+      semanticCommitType: 'ci',
+      labels: ['dependencies', 'major'],
+    },
+
+    // -----------------------------------------------------------------
+    // Terraform - the Cloudflare provider pinned `~> 5.0` in
+    // infra/bootstrap/providers.tf. These PRs only change the pin; applying
+    // them is a manual `./jobs/bootstrap` run against local state.
+    // -----------------------------------------------------------------
+    {
+      description: 'Terraform: group routine minor and patch updates into one PR.',
+      matchManagers: ['terraform'],
+      matchUpdateTypes: ['minor', 'patch'],
+      groupName: 'terraform minor and patch',
+      semanticCommitType: 'infra',
+    },
+    {
+      description: 'Terraform: majors are reviewed one at a time.',
+      matchManagers: ['terraform'],
+      matchUpdateTypes: ['major'],
+      groupName: null,
+      semanticCommitType: 'infra',
+      labels: ['dependencies', 'major'],
+    },
+  ],
+}
