@@ -7,7 +7,8 @@
     "start": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test:smoke": "playwright test"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
@@ -25,6 +26,7 @@
     "typescript": "^5.9.2"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.0",
     "@tailwindcss/typography": "^0.5.18",
     "pagefind": "^1.4.0",
     "prettier": "^3.6.2",

@@ -35,6 +35,7 @@ Always run `npm run build` before committing: it is exactly what CI runs, and it
 ```
 .
 ├── .github/workflows/deploy.yml   # CI/CD: build + deploy to Cloudflare Pages
+├── .github/workflows/smoke.yml    # Scheduled Playwright smoke tests against the live sites
 ├── astro.config.mjs               # Astro integrations: sitemap, mdx, pagefind, tailwind
 ├── infra/bootstrap/               # Terraform: Cloudflare Pages project + custom domains
 ├── jobs/bootstrap                 # Script that runs terraform init/plan/apply for infra/bootstrap
@@ -50,6 +51,7 @@ Always run `npm run build` before committing: it is exactly what CI runs, and it
 │   ├── lib/utils.ts               # Helpers: cn, formatDate, readingTime
 │   ├── styles/global.css          # Tailwind entry + global styles
 │   └── types.ts                   # Shared TS types
+├── tests/smoke/                   # Playwright smoke tests (run against a deployed site, see playwright.config.ts)
 ├── public/                        # Static assets served from the site root (article images, favicon)
 ├── img/, pdf/                     # Legacy assets from the previous site (CV, certifications)
 └── tsconfig.json                  # Path alias: `@/...` → `src/...`
@@ -88,6 +90,12 @@ Required GitHub repository secrets:
 - `CLOUDFLARE_ACCOUNT_ID`
 
 So **publishing = pushing/merging to `master`**. There is no staging environment; to preview, use `npm run build && npm run preview` locally.
+
+### Smoke tests
+
+`.github/workflows/smoke.yml` runs every 6 hours (and on manual trigger) against both `https://rafikbahri.com` and `https://rafikbahri.github.io`. It checks that the homepage, `/blog/` and `/projects/` return 200, and that the title, "Presentation" section, header navigation, "Latest posts" and the current-year copyright are shown. A failed run means the live site is down or broken; GitHub emails the repo owner.
+
+Run them locally with `npm run test:smoke` (defaults to `https://rafikbahri.com`; set `SITE_URL` for another target, run `npx playwright install chromium` once first). Update `tests/smoke/site.spec.ts` when you change the homepage copy it asserts on.
 
 ### Manual deployment (fallback)
 
