@@ -25,6 +25,9 @@
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2"
   },
+  "overrides": {
+    "vite": "^6.4.1"
+  },
   "devDependencies": {
     "@playwright/test": "1.64.0",
     "@tailwindcss/typography": "^0.5.18",
