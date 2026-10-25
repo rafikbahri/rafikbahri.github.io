@@ -34,6 +34,7 @@ Always run `npm run build` before committing: it is exactly what CI runs, and it
 
 ```
 .
+├── .github/workflows/ci.yml       # Pre-merge gate on pull requests: build + smoke-test the build
 ├── .github/workflows/deploy.yml   # CI/CD: build + deploy to Cloudflare Pages
 ├── .github/workflows/smoke.yml    # Scheduled Playwright smoke tests against the live sites
 ├── astro.config.mjs               # Astro integrations: sitemap, mdx, pagefind, tailwind
@@ -69,6 +70,19 @@ Key points:
 Production is **Cloudflare Pages**, project `rafikbahri-com`, production branch `master`.
 The same build is mirrored to **GitHub Pages** (https://rafikbahri.github.io). Its canonical URLs point to `rafikbahri.com` (the `site` setting), so search engines treat Cloudflare as the primary.
 
+### Pre-merge CI
+
+`.github/workflows/ci.yml` runs on every pull request targeting `master` (and on manual trigger). It deploys nothing and needs no secrets (`permissions: contents: read`):
+
+1. `build`: checkout → Node 25 → `npm ci` → `npm run build` → upload `dist/` as a run artifact (kept 7 days, downloadable from the run page for manual review).
+2. `smoke` (runs only if `build` succeeded): downloads that `dist/`, serves it with `astro preview` on `http://127.0.0.1:4321`, and runs the Playwright smoke tests against it. The assertions in `tests/smoke/site.spec.ts` therefore check **the PR's own output**, not the live site.
+
+Pushing again to a PR branch cancels the in-flight run (`concurrency`).
+
+Keep the Node version in `ci.yml` equal to the one in `deploy.yml`. If they drift, CI stops testing what production builds. Same for `smoke.yml`.
+
+`master` currently has **no branch protection and no rulesets**, so these checks report on a PR but do not block merging it. To make them a real gate, mark `Build` (and optionally `Smoke test the build`) as required status checks in the repository settings.
+
 ### Continuous deployment (normal path)
 
 `.github/workflows/deploy.yml` runs on:
@@ -94,6 +108,8 @@ So **publishing = pushing/merging to `master`**. There is no staging environment
 ### Smoke tests
 
 `.github/workflows/smoke.yml` runs every 6 hours (and on manual trigger) against both `https://rafikbahri.com` and `https://rafikbahri.github.io`. It checks that the homepage, `/blog/` and `/projects/` return 200, and that the title, "Presentation" section, header navigation, "Latest posts" and the current-year copyright are shown. A failed run means the live site is down or broken; GitHub emails the repo owner.
+
+The same specs run pre-merge from `ci.yml`, but against the PR's local build instead of the deployed sites. That is deliberate: `smoke.yml` answers "is production up?", `ci.yml` answers "would this change break it?". `smoke.yml` has no `pull_request` trigger — running it on a PR would only re-test production.
 
 Run them locally with `npm run test:smoke` (defaults to `https://rafikbahri.com`; set `SITE_URL` for another target, run `npx playwright install chromium` once first). Update `tests/smoke/site.spec.ts` when you change the homepage copy it asserts on.
 
