@@ -129,6 +129,24 @@ npx wrangler pages deploy dist --project-name=rafikbahri-com --branch=master
 
 The DNS zone `rafikbahri.com` lives in Cloudflare. Apply with `./jobs/bootstrap` from the repo root; it expects `infra/bootstrap/prod.tfvars` (git-ignored) containing `cloudflare_api_token` and `cloudflare_account_id`. Terraform state is local and git-ignored, so do not run this from CI or from a fresh clone without the existing state: it would try to recreate the resources.
 
+## Dependency updates
+
+[Renovate](https://docs.renovatebot.com) keeps the three ecosystems in this repo current: npm, the GitHub Actions SHA pins in `.github/workflows/`, and the Cloudflare provider in `infra/bootstrap/`. Config lives in `.github/renovate.json5`.
+
+- It requires the **Mend Renovate GitHub App** installed on the repository. Without it the config file does nothing. Because a config file is already present, Renovate skips its onboarding PR and starts on the normal schedule.
+- Schedule: Monday 06:00–09:00 Europe/Paris. A routine week is at most three grouped PRs (minor + patch, one per ecosystem) plus one PR per major.
+- A `lockFileMaintenance` PR lands on the 1st of each month. It refreshes `package-lock.json` wholesale, so transitive dependencies move even when no direct dependency did — that is where this repo actually went stale.
+- Security fixes ignore the weekly window and are raised as soon as an advisory lands. Renovate reads GitHub's alerts, so **Dependabot alerts must stay enabled** in the repo's Security settings, plus OSV directly.
+- Nothing automerges. Every PR is reviewed and merged by hand — merging to `master` deploys to production.
+- Deferred majors (`astro`, `@astrojs/mdx`, `astro-pagefind`, `typescript`) are held behind `dependencyDashboardApproval`, not `ignore`. They are listed on the **Dependency dashboard** issue with a checkbox that opens the PR on demand, and security fixes for them are still raised normally. Delete the matching `packageRules` entry when the upgrade is actually scheduled.
+- Validate a change to the config before pushing — run from the repo root, it auto-discovers the file:
+
+  ```sh
+  npx --yes --package renovate -- renovate-config-validator --strict
+  ```
+
+Note that no workflow triggers on `pull_request` (`deploy.yml` is push-to-`master`, `smoke.yml` is scheduled), so dependency PRs show zero checks. Run `npm run build` locally on the branch before merging one.
+
 ## Add an article
 
 1. Create a folder in `src/content/blog/`, prefixed with the next two-digit number to keep ordering readable:
