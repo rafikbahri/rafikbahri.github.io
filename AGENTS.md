@@ -79,7 +79,7 @@ The same build is mirrored to **GitHub Pages** (https://rafikbahri.github.io). I
 
 Jobs:
 
-1. `deploy`: checkout → Node 25 → `npm ci` → `npm run build` → `wrangler pages deploy dist --project-name=rafikbahri-com --branch=master` via `cloudflare/wrangler-action` → upload `dist/` as the GitHub Pages artifact.
+1. `deploy`: checkout → Node 24 → `npm ci` → `npm run build` → `wrangler pages deploy dist --project-name=rafikbahri-com --branch=master` via `cloudflare/wrangler-action` → upload `dist/` as the GitHub Pages artifact.
 2. `deploy-github-pages` (runs only if `deploy` succeeded, so both sites stay identical): publishes that artifact with `actions/deploy-pages` to the `github-pages` environment.
 
 GitHub Pages must stay set to **Source: GitHub Actions** (`build_type: workflow`). In the default "Deploy from a branch" mode, GitHub runs its own Jekyll build on `master`, which cannot build Astro and fails (`pages-build-deployment`).
@@ -108,7 +108,7 @@ npx wrangler pages deploy dist --project-name=rafikbahri-com --branch=master
 
 `infra/bootstrap/` holds the Terraform (Cloudflare provider `~> 5.0`) that creates:
 
-- the Pages project `rafikbahri-com` (production branch `master`, `NODE_VERSION=25`)
+- the Pages project `rafikbahri-com` (production branch `master`, `NODE_VERSION=24`)
 - custom domains `rafikbahri.com` and `www.rafikbahri.com` attached to the project
 
 The DNS zone `rafikbahri.com` lives in Cloudflare. Apply with `./jobs/bootstrap` from the repo root; it expects `infra/bootstrap/prod.tfvars` (git-ignored) containing `cloudflare_api_token` and `cloudflare_account_id`. Terraform state is local and git-ignored, so do not run this from CI or from a fresh clone without the existing state: it would try to recreate the resources.
