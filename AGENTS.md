@@ -131,6 +131,7 @@ The DNS zone `rafikbahri.com` lives in Cloudflare. Apply with `./jobs/bootstrap`
    description: "One-line summary used in listings, meta tags and RSS."
    date: "2026-10-23"
    tags: ["aws", "terraform"]   # optional, generates /tags/<tag> pages
+   image: "/01-overview.png"    # optional, thumbnail shown on the homepage "Latest posts" card (file in public/)
    draft: true                  # optional, hides the article everywhere while true
    ---
 
