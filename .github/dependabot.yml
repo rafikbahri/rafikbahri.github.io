@@ -1,0 +1,117 @@
+---
+# Dependabot keeps the three ecosystems that exist in this repo current.
+#
+# Minor and patch updates are grouped into a single PR per ecosystem so a
+# routine week arrives as three PRs rather than a dozen. Major updates are
+# deliberately NOT grouped: each one deserves its own review.
+#
+# All three ecosystems run on the same day so the whole sweep lands in one
+# review sitting instead of trickling across the week.
+version: 2
+
+updates:
+  # ---------------------------------------------------------------------
+  # Site dependencies
+  # ---------------------------------------------------------------------
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Paris
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: deps
+      prefix-development: deps-dev
+      include: scope
+    groups:
+      npm-minor-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # The majors below are open decisions, not oversights. Each was
+      # proposed, reviewed and deliberately deferred - see RAF-3/RAF-4.
+      # Remove the matching entry when the upgrade is actually scheduled.
+      #
+      # NOTE: an `ignore` entry also suppresses Dependabot *security* PRs
+      # for the ignored versions. Advisories against these packages that
+      # are only fixed in a major will not raise a PR here; they are
+      # tracked out-of-band instead.
+
+      # Astro 5 -> 7. Two majors of breaking changes across content
+      # collections, the adapter API and the image service. Deferred.
+      - dependency-name: astro
+        update-types:
+          - version-update:semver-major
+
+      # @astrojs/mdx 4 -> 8. Coupled to the Astro major above; it cannot
+      # be taken independently. Deferred with it.
+      - dependency-name: '@astrojs/mdx'
+        update-types:
+          - version-update:semver-major
+
+      # TypeScript 5 -> 7. The 7.x native port changes compiler behaviour
+      # and `astro check` runs in the build path, so a regression here
+      # breaks deploys. Deferred.
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-major
+
+      # astro-pagefind 1 -> 2. Not in the original deferral list, but it
+      # is the same situation: a major sitting upstream that would open a
+      # PR on day one. It wires the search index into the Astro build, so
+      # it is coupled to the Astro major above. Deferred for consistency.
+      - dependency-name: astro-pagefind
+        update-types:
+          - version-update:semver-major
+
+  # ---------------------------------------------------------------------
+  # Workflow actions - keeps the SHA pins in deploy.yml and smoke.yml
+  # current. Without this they rot silently: a pinned SHA never reports
+  # that a newer one exists.
+  # ---------------------------------------------------------------------
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Paris
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions-minor-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+
+  # ---------------------------------------------------------------------
+  # Terraform - the Cloudflare provider pinned `~> 5.0` in
+  # infra/bootstrap/providers.tf.
+  # ---------------------------------------------------------------------
+  - package-ecosystem: terraform
+    directory: /infra/bootstrap
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Paris
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: infra
+      include: scope
+    groups:
+      terraform-minor-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
