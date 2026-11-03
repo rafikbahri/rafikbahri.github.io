@@ -10,8 +10,9 @@ import TableOfContents from "@components/TableOfContents.astro";
 import Giscus from "@components/Giscus.astro";
 
 export async function getStaticPaths() {
+  // Drafts get a page in dev so they can be previewed, never in production builds
   const posts = (await getCollection("blog"))
-    .filter((post) => !post.data.draft)
+    .filter((post) => import.meta.env.DEV || !post.data.draft)
     .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
   return posts.map((post) => ({
     params: { id: post.id },
