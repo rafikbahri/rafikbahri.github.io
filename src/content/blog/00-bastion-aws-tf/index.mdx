@@ -3,9 +3,11 @@ title: "Bastion Architecture on AWS using Terraform"
 description: "IaC, Terraform, AWS."
 date: "2025-11-23"
 image: "/00-archictecture.png"
+tags: ["aws", "terraform", "security", "ssh"]
 ---
 
 import Callout from "@/components/Callout.astro";
+import Gallery from "@/components/Gallery.astro";
 
 ---
 
@@ -74,7 +76,7 @@ Let’s discuss the architecture component by component
 - 1 NAT gateway main-nat-gateway
 - 1 Local desktop
 
-![Architecture](/00-archictecture.png)
+<Gallery images={[{ src: "/00-archictecture.png", alt: "Architecture diagram: the local desktop connects over SSH through the internet gateway to bastion001 in bastions-subnet, which reaches private001 to private003 in private-instances-subnet via ProxyJump SSH; the private instances get internet access through the NAT gateway, all inside main-vpc" }]} />
 
 ---
 
@@ -355,7 +357,7 @@ terraform apply "tfplan"
 
 On your AWS Console, open *EC2 > Instances (Running)*
 
-![EC2 Running](/00-ec2-running.png)
+<Gallery images={[{ src: "/00-ec2-running.png", alt: "AWS Console EC2 instances list: bastion001, private001, private002 and private003 running as t2.micro in eu-west-3a, with only bastion001 having a public IPv4 address" }]} />
 
 We can see that only the bastion host bastion001 has a Public IPv4.  
 Test your SSH access to the Bastion host
@@ -372,20 +374,20 @@ ssh -F .ssh/config ec2-user@private001
 
 You should have a similar output to
 
-![SSH](/00-ssh.png)
+<Gallery images={[{ src: "/00-ssh.png", alt: "Terminal output of ssh -F .ssh/config to bastion001, then to private001 through the bastion, each showing the Amazon Linux 2 login banner" }]} />
 
 Go ahead and test your access using AWS Session Manager as well.  
 To do so, choose an *EC2 instance, then Connect > Session Manager*
 
-![EC2 Connect](/00-ec2-connect-1.png)
+<Gallery images={[{ src: "/00-ec2-connect-1.png", alt: "AWS Console instance summary for private001, which has no public IPv4 address, with the Connect button at the top right" }]} />
 
 Then
 
-![EC2 Connect SM](/00-ec2-connect-2.png)
+<Gallery images={[{ src: "/00-ec2-connect-2.png", alt: "AWS Console Connect to instance page with the Session Manager tab selected and its Connect button" }]} />
 
 And 
 
-![EC2 Session Manager](/00-ec2-connect-sm.png)
+<Gallery images={[{ src: "/00-ec2-connect-sm.png", alt: "Session Manager shell on the private instance: hostname and ip a show its private address 192.168.16.11" }]} />
 
 ## Conclusion
 
