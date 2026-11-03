@@ -13,37 +13,65 @@ draft: true
 
 On October 15th and 16th, 2026, I was in Amsterdam for TalosCon 2026, the conference around Talos Linux, hosted by Sidero Labs.
 
-_TODO: Why you went, your role, and what you were hoping to get out of it._
+I am a Site Reliability and Platform Engineer at [StrangeBee](https://strangebee.com), focusing on providing best-of-breed solutions for our customers as well as our engineering teams.
 
-In this article, I will go through the products featured this year: Talos Omni, Talos Director, Talos Cupar and Talos AI, and share what I took away from them.
+Talos is high on our radar, so I went to see where the ecosystem is heading and what running it on bare metal looks like in practice.
+
+In this article, I will go through the products featured this year: Talos Omni, Talos Director and Talos Containers, and share what I took away from them.
 
 ---
 
 ## Talos Linux in a nutshell
 
-Talos Linux is a minimal, immutable Linux distribution built for Kubernetes. There is no SSH and no shell: the whole system is managed through an API.
+I discovered Talos Linux when I wanted to set up a homelab on Kubernetes. Since then, I have been a big fan of the project.
 
-_TODO: How you use Talos today (homelab, work, production?), in two or three sentences._
+Talos Linux is a minimal, immutable Linux distribution built for Kubernetes. It has no SSH and no shell: the whole system is managed through an API.
+
+The project is fully open source, backed by a great team, Sidero Labs, and has a very helpful documentation and community.
 
 ---
 
-## Featured products
+## The Conference
 
-### Talos Omni
+The main headline of the conference was Sidero Labs' acquisition by Yardi Systems. A big real-estate software company buying a niche open-source software startup? The news raised concerns in the community, mine included. We will address these concerns in the following sections.
 
-_TODO: What it is, what was announced or demoed, and what stood out to you._
+### Will Talos become commercial?
 
-### Talos Director
+Sidero Labs' president, Steve Francis, and Yardi's founder, Anant Yardi, both confirmed and reassured the community: Talos stays open source and free to use, for homelabbers as well as for companies.
 
-_TODO: What it is, what was announced or demoed, and what stood out to you._
+So why this acquisition? Yardi Systems operates thousands of virtual machines to deploy its solutions worldwide. The company has been a longtime VMware customer and saw the price increases, so I guess acquiring Sidero Labs, a promising infrastructure software company with innovative solutions, is a strategic move for Yardi. That said, it's fair to expect some parts of Sidero Labs' solutions to go commercial.
 
-### Talos Cupar
+### Talks and featured products
 
-_TODO: What it is, what was announced or demoed, and what stood out to you._
+#### Talos Omni
 
-### Talos AI
+The Day 1 talks featured Omni, a community favorite in the Talos ecosystem. Omni is Sidero Labs' management platform for Talos clusters. It offers an API, a CLI and a GUI to create, upgrade and operate Kubernetes clusters on Talos. It's available as SaaS or self-hosted. Personally, I self-host it to manage my homelab cluster, and I've been having a blast :)
 
-_TODO: What it is, what was announced or demoed, and what stood out to you._
+The good news for homelabbers: the Omni Hobby tier, for up to 10 nodes and two users, is now free.
+#### Talos Hypervisor
+
+Sidero Labs demoed Talos Hypervisor: virtual machines directly on Talos Linux, without Kubernetes or KubeVirt. It is built on the usual libvirt and QEMU/KVM stack, shipped as a Talos system extension, and the VMs are managed declaratively through YAML configuration, like everything else in Talos.
+
+In the demo, Justin Garrison, Field CTO at Sidero, brought a physical hypervisor and booted a Windows XP VM on Talos :) Talos Hypervisor is in alpha in Talos Linux 1.15, with general availability planned for December 2026, and stays open source under the MPL-2.0 license. It is also the foundation of Talos Director.
+
+#### Talos Director
+
+During Day 1, Sidero Labs introduced Talos Director: a new platform to manage data center resources. Positioned as an alternative to solutions like VMware vCenter or Nutanix Prism, Director covers virtual machine management, live migration, high availability, autoscaling, network micro-segmentation, and more, with Omni as the backbone for Kubernetes cluster operations.
+
+It is not a slideware product: Yardi already runs it in production, and the live demo showed it managing a large fleet of clusters. Talos Director is in Limited Availability, with general availability planned for January 2027.
+
+One of the biggest questions was: will Director be available to self-host, as open-source software with some kind of free tier? There is no answer as of today.
+
+#### Talos Containers
+
+Talos Linux is gaining the ability to run containers directly, without Kubernetes. It targets single-node sites, like a retail location, a factory floor gateway or a cell site, where a full Kubernetes control plane is just overhead.
+
+Those nodes stay declarative and immutable like any Talos machine, and are managed from Omni alongside the Kubernetes clusters, so the whole fleet is handled the same way.
+
+#### Other featured products
+
+- **Talos Cupar:** a commercial platform to run an AI stack on your own infrastructure: "your models, your data, your infrastructure".
+- **Talos Linux for AI:** an open-source variant of Talos for AI workloads, with GPU support, model serving and fine-tuning.
 
 ---
 
