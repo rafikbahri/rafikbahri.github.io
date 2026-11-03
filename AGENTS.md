@@ -108,7 +108,7 @@ So **publishing = pushing/merging to `master`**. There is no staging environment
 
 ### Smoke tests
 
-`.github/workflows/smoke.yml` runs every 6 hours (and on manual trigger) against both `https://rafikbahri.com` and `https://rafikbahri.github.io`. It checks that the homepage, `/blog/` and `/projects/` return 200, and that the title, "Presentation" section, header navigation, "Latest posts" and the current-year copyright are shown. On a published article (`/blog/00-bastion-aws-tf/`) it checks that the table of contents starts closed and that headings have `#` anchors kept out of the table of contents and search. It also checks that tags render as `#tag` (skipped while no published article has tags) and that the draft `/blog/01-taloscon-2026/` returns 404. A failed run means the live site is down or broken; GitHub emails the repo owner.
+`.github/workflows/smoke.yml` runs every 6 hours (and on manual trigger) against both `https://rafikbahri.com` and `https://rafikbahri.github.io`. It checks that the homepage, `/blog/` and `/projects/` return 200, and that the title, "Presentation" section, header navigation, "Latest posts" and the current-year copyright are shown. On a published article (`/blog/00-bastion-aws-tf/`) it checks that the table of contents starts closed and that headings have `#` anchors kept out of the table of contents and search. It also checks that tags render as `#tag` (skipped while no published article has tags) and that `/blog/01-taloscon-2026/` is published. A failed run means the live site is down or broken; GitHub emails the repo owner.
 
 The same specs run pre-merge from `ci.yml`, but against the PR's local build instead of the deployed sites. That is deliberate: `smoke.yml` answers "is production up?", `ci.yml` answers "would this change break it?". `smoke.yml` has no `pull_request` trigger — running it on a PR would only re-test production.
 
@@ -212,7 +212,7 @@ Dependency PRs get the `ci.yml` checks (build + smoke tests on the PR's build) l
    `title` gives the icon a name for screen readers; `dark:invert` keeps black logos visible in dark mode.
 
 5. Preview with `npm run dev`: drafts are shown there, including their tags and their place in the lists. Then run `npm run build` to validate the schema and types. A draft's components are only rendered by the production build once it is published, so before publishing, run `npm run build` once with `draft: true` removed.
-6. To publish, remove `draft: true` (or set it to `false`), update the "draft articles are not published" check in `tests/smoke/site.spec.ts` (it expects that URL to return 404), commit, and merge to `master`. CI deploys it.
+6. To publish, remove `draft: true` (or set it to `false`), update any check in `tests/smoke/site.spec.ts` that expects the draft's URL to return 404, commit, and merge to `master`. CI deploys it.
 
 ## Delete an article
 

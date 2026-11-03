@@ -77,10 +77,12 @@ test("tags are shown as #tag", async ({ page }) => {
   }
 });
 
-// Update this when the article is published: drafts must never be served
-test("draft articles are not published", async ({ page }) => {
+test("the TalosCon 2026 article is published", async ({ page }) => {
   const response = await page.goto("/blog/01-taloscon-2026/");
-  expect(response?.status()).toBe(404);
+  expect(response?.status()).toBe(200);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "TalosCon 2026" }),
+  ).toBeVisible();
 });
 
 for (const path of ["/blog/", "/projects/"]) {
