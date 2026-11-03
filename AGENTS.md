@@ -37,7 +37,7 @@ Always run `npm run build` before committing: it is exactly what CI runs, and it
 ├── .github/workflows/ci.yml       # Pre-merge gate on pull requests: build + smoke-test the build
 ├── .github/workflows/deploy.yml   # CI/CD: build + deploy to Cloudflare Pages
 ├── .github/workflows/smoke.yml    # Scheduled Playwright smoke tests against the live sites
-├── astro.config.mjs               # Astro integrations: sitemap, mdx, pagefind, tailwind
+├── astro.config.mjs               # Astro integrations (sitemap, mdx, pagefind, astro-icon, tailwind) and heading anchors
 ├── infra/bootstrap/               # Terraform: Cloudflare Pages project + custom domains
 ├── jobs/bootstrap                 # Script that runs terraform init/plan/apply for infra/bootstrap
 ├── src/
@@ -46,7 +46,7 @@ Always run `npm run build` before committing: it is exactly what CI runs, and it
 │   ├── content/
 │   │   ├── blog/<NN-slug>/index.mdx   # One folder per article
 │   │   └── projects/                  # Project entries (collection defined, currently empty)
-│   ├── components/                # Astro components (Callout, Giscus comments, TOC, PageFind, ...)
+│   ├── components/                # Astro components (Gallery, Callout, Giscus comments, TOC, PageFind, ...)
 │   ├── layouts/Layout.astro       # Base HTML layout
 │   ├── pages/                     # File-based routes: /, /blog, /projects, /tags, /rss.xml, 404
 │   ├── lib/utils.ts               # Helpers: cn, formatDate, readingTime
@@ -61,7 +61,8 @@ Always run `npm run build` before committing: it is exactly what CI runs, and it
 Key points:
 
 - Routing is file-based. A blog entry at `src/content/blog/00-bastion-aws-tf/index.mdx` is served at `/blog/00-bastion-aws-tf/`.
-- Every listing page (home, blog, tags, RSS, prev/next navigation) filters out entries with `draft: true`.
+- Entries with `draft: true` are left out of production builds everywhere: their page, the home and blog lists, tags, prev/next navigation, RSS and the sitemap. In `npm run dev` they are shown everywhere except RSS, so drafts can be previewed. The rule is `import.meta.env.DEV || !post.data.draft`; keep RSS on `!post.data.draft` only.
+- Article headings (`##` and below) get a `#` link to themselves, added at build time by `rehype-autolink-headings` (`astro.config.mjs`). The link carries `data-pagefind-ignore` so the `#` stays out of search results, and the table of contents (`src/components/TableOfContents.astro`, closed by default) reads the heading text without it.
 - Article comments use [Giscus](https://giscus.app) (`src/components/Giscus.astro`): one GitHub Discussion per article in the "Announcements" category of `rafikbahri/rafikbahri.github.io`, matched by page path. This requires Discussions enabled on the repo and the Giscus GitHub App installed on it; otherwise the widget shows "github.com refused to connect".
 - The search index is generated at build time by `astro-pagefind` into `dist/pagefind/`. `public/pagefind/` is a stale generated leftover; do not edit it by hand.
 
@@ -107,7 +108,7 @@ So **publishing = pushing/merging to `master`**. There is no staging environment
 
 ### Smoke tests
 
-`.github/workflows/smoke.yml` runs every 6 hours (and on manual trigger) against both `https://rafikbahri.com` and `https://rafikbahri.github.io`. It checks that the homepage, `/blog/` and `/projects/` return 200, and that the title, "Presentation" section, header navigation, "Latest posts" and the current-year copyright are shown. A failed run means the live site is down or broken; GitHub emails the repo owner.
+`.github/workflows/smoke.yml` runs every 6 hours (and on manual trigger) against both `https://rafikbahri.com` and `https://rafikbahri.github.io`. It checks that the homepage, `/blog/` and `/projects/` return 200, and that the title, "Presentation" section, header navigation, "Latest posts" and the current-year copyright are shown. On a published article (`/blog/00-bastion-aws-tf/`) it checks that the table of contents starts closed and that headings have `#` anchors kept out of the table of contents and search. It also checks that tags render as `#tag` (skipped while no published article has tags) and that the draft `/blog/01-taloscon-2026/` returns 404. A failed run means the live site is down or broken; GitHub emails the repo owner.
 
 The same specs run pre-merge from `ci.yml`, but against the PR's local build instead of the deployed sites. That is deliberate: `smoke.yml` answers "is production up?", `ci.yml` answers "would this change break it?". `smoke.yml` has no `pull_request` trigger — running it on a PR would only re-test production.
 
@@ -145,7 +146,7 @@ The DNS zone `rafikbahri.com` lives in Cloudflare. Apply with `./jobs/bootstrap`
   npx --yes --package renovate -- renovate-config-validator --strict
   ```
 
-Note that no workflow triggers on `pull_request` (`deploy.yml` is push-to-`master`, `smoke.yml` is scheduled), so dependency PRs show zero checks. Run `npm run build` locally on the branch before merging one.
+Dependency PRs get the `ci.yml` checks (build + smoke tests on the PR's build) like any other pull request; `deploy.yml` only runs on push to `master` and `smoke.yml` on its schedule.
 
 ## Add an article
 
@@ -166,7 +167,7 @@ Note that no workflow triggers on `pull_request` (`deploy.yml` is push-to-`maste
    date: "2026-10-23"
    tags: ["aws", "terraform"]   # optional, generates /tags/<tag> pages
    image: "/01-overview.png"    # optional, thumbnail shown on the homepage and /blog/ cards (file in public/)
-   draft: true                  # optional, hides the article everywhere while true
+   draft: true                  # optional, hidden from production builds while true (still shown in npm run dev)
    ---
 
    import Callout from "@/components/Callout.astro";
@@ -177,14 +178,41 @@ Note that no workflow triggers on `pull_request` (`deploy.yml` is push-to-`maste
 
    `title`, `description` and `date` are required. Use `.mdx` when you need components, `.md` otherwise.
 
-3. Images: put them in `public/`, prefixed with the article number (e.g. `public/01-diagram.png`), and reference them from the site root:
+3. Images: put them in `public/`, prefixed with the article number (e.g. `public/01-diagram.webp`). Convert photos to WebP, 1600 px wide for landscape (1200 px for portrait), with metadata stripped so no GPS location or device info is published:
 
-   ```md
-   ![Diagram](/01-diagram.png)
+   ```sh
+   cwebp -q 80 -resize 1600 0 -metadata none photo.jpg -o public/01-photo.webp
    ```
 
-4. Check locally with `npm run dev`, then `npm run build` to validate the schema and types.
-5. Remove `draft: true` (or set it to `false`) when ready, commit, and push to `master`. CI deploys it.
+   Show them with the `Gallery` component, for one image or several. One image is shown full width and uncropped; several become a two-column grid of 4:3 thumbnails. Every image opens full size in a new tab:
+
+   ```mdx
+   import Gallery from "@/components/Gallery.astro";
+
+   <Gallery images={[{ src: "/01-photo.webp", alt: "What the photo shows" }]} />
+
+   <Gallery
+     images={[
+       { src: "/01-first.webp", alt: "…" },
+       { src: "/01-second.webp", alt: "…" },
+     ]}
+   />
+   ```
+
+   Files in `public/` are deployed as soon as they are merged, even while the article is a draft.
+
+4. Brand logos (GitHub, LinkedIn, ...) come from [astro-icon](https://www.astroicon.dev) with the Iconify `logos` set (`@iconify-json/logos`). Using another Iconify set means installing its `@iconify-json/<set>` package first.
+
+   ```mdx
+   import { Icon } from "astro-icon/components";
+
+   [<Icon name="logos:github-icon" title="GitHub" class="mr-1.5 inline-block align-[-0.125em] dark:invert" />rafikbahri](https://github.com/rafikbahri)
+   ```
+
+   `title` gives the icon a name for screen readers; `dark:invert` keeps black logos visible in dark mode.
+
+5. Preview with `npm run dev`: drafts are shown there, including their tags and their place in the lists. Then run `npm run build` to validate the schema and types. A draft's components are only rendered by the production build once it is published, so before publishing, run `npm run build` once with `draft: true` removed.
+6. To publish, remove `draft: true` (or set it to `false`), update the "draft articles are not published" check in `tests/smoke/site.spec.ts` (it expects that URL to return 404), commit, and merge to `master`. CI deploys it.
 
 ## Delete an article
 
