@@ -1,0 +1,39 @@
+---
+type Props = {
+  images: { src: string; alt: string }[];
+};
+
+const { images } = Astro.props;
+// A single image is shown full width and uncropped, several as a grid of thumbnails
+const single = images.length === 1;
+---
+
+{
+  images.length > 0 && (
+    <div
+      class:list={[
+        "not-prose my-6 grid grid-cols-1 gap-3",
+        !single && "sm:grid-cols-2",
+      ]}
+    >
+      {images.map(({ src, alt }) => (
+        <a
+          href={src}
+          target="_blank"
+          rel="noopener"
+          class="block overflow-hidden rounded-lg border border-black/15 transition-opacity duration-300 ease-in-out hover:opacity-80 focus-visible:opacity-80 dark:border-white/20"
+        >
+          <img
+            src={src}
+            alt={alt}
+            loading="lazy"
+            class:list={[
+              "w-full",
+              single ? "h-auto" : "aspect-4/3 h-full object-cover",
+            ]}
+          />
+        </a>
+      ))}
+    </div>
+  )
+}

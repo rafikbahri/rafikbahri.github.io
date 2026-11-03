@@ -3,7 +3,11 @@ import { getCollection } from "astro:content";
 import Layout from "@layouts/Layout.astro";
 import Container from "@components/Container.astro";
 
-const posts = await getCollection("blog", ({ data }) => !data.draft);
+// Drafts are listed in dev so their tags can be previewed, never in production builds
+const posts = await getCollection(
+  "blog",
+  ({ data }) => import.meta.env.DEV || !data.draft,
+);
 const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))].sort();
 ---
 
@@ -18,7 +22,7 @@ const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))].sort();
               href={`/tags/${tag}`}
               class="rounded-sm border border-black/15 px-2 py-1 text-sm transition-colors duration-300 ease-in-out hover:bg-black/5 hover:text-black focus-visible:bg-black/5 focus-visible:text-black dark:border-white/20 dark:hover:bg-white/5 dark:hover:text-white dark:focus-visible:bg-white/5 dark:focus-visible:text-white"
             >
-              {tag}{" "}
+              #{tag}{" "}
               <span class="text-sm text-gray-600">
                 ({posts.filter((post) => post.data.tags?.includes(tag)).length})
               </span>

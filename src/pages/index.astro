@@ -7,8 +7,9 @@ import Link from "@components/Link.astro";
 import { getCollection } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 
+// Drafts are listed in dev so they can be previewed, never in production builds
 const blog = (await getCollection("blog"))
-  .filter((post) => !post.data.draft)
+  .filter((post) => import.meta.env.DEV || !post.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, SITE.NUM_POSTS_ON_HOMEPAGE);
 
@@ -50,7 +51,7 @@ const projects: CollectionEntry<"projects">[] = (
             </h2>
             <Link href="/blog"> See all posts </Link>
           </div>
-          <ul class="not-prose flex flex-col gap-4">
+          <ul class="not-prose flex flex-col gap-2">
             {
               blog.map((post) => (
                 <li>

@@ -10,8 +10,9 @@ import TableOfContents from "@components/TableOfContents.astro";
 import Giscus from "@components/Giscus.astro";
 
 export async function getStaticPaths() {
+  // Drafts get a page in dev so they can be previewed, never in production builds
   const posts = (await getCollection("blog"))
-    .filter((post) => !post.data.draft)
+    .filter((post) => import.meta.env.DEV || !post.data.draft)
     .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
   return posts.map((post) => ({
     params: { id: post.id },
@@ -20,8 +21,9 @@ export async function getStaticPaths() {
 }
 type Props = CollectionEntry<"blog">;
 
+// Same rule as getStaticPaths, so prev/next links also work on draft previews
 const posts = (await getCollection("blog"))
-  .filter((post) => !post.data.draft)
+  .filter((post) => import.meta.env.DEV || !post.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
 function getNextPost() {
@@ -79,7 +81,7 @@ const { Content, headings } = await render(post);
                 href={`/tags/${tag}`}
                 class="rounded-sm border border-black/15 px-2 py-1 text-sm transition-colors duration-300 ease-in-out hover:bg-black/5 hover:text-black focus-visible:bg-black/5 focus-visible:text-black dark:border-white/20 dark:hover:bg-white/5 dark:hover:text-white dark:focus-visible:bg-white/5 dark:focus-visible:text-white"
               >
-                {tag}
+                #{tag}
               </a>
             ))}
           </div>

@@ -1,0 +1,120 @@
+---
+title: "TalosCon 2026"
+description: "Talos future and featured products"
+date: "2026-10-25"
+tags: ["talos", "kubernetes", "conference"]
+image: "/01-taloscon-2026.webp"
+---
+
+import Gallery from "@/components/Gallery.astro";
+import { Icon } from "astro-icon/components";
+
+<Gallery images={[{ src: "/01-taloscon-2026-venue.webp", alt: "The TalosCon 2026 banner at the venue entrance in Amsterdam" }]} />
+
+## Introduction
+
+On October 15th and 16th, 2026, I was in Amsterdam for TalosCon 2026, the conference around Talos Linux, hosted by Sidero Labs.
+
+I am a Site Reliability and Platform Engineer at [StrangeBee](https://strangebee.com), focusing on providing best-of-breed solutions for our customers as well as our engineering teams.
+
+Talos is high on our radar, so I went to see where the ecosystem is heading and what running it on bare metal looks like in practice.
+
+In this article, I will go through the products featured this year: Talos Omni, Talos Director and Talos Containers, and share what I took away from them.
+
+---
+
+## Talos Linux in a nutshell
+
+I discovered Talos Linux when I wanted to set up a homelab on Kubernetes. Since then, I have been a big fan of the project.
+
+Talos Linux is a minimal, immutable Linux distribution built for Kubernetes. It has no SSH and no shell: the whole system is managed through an API.
+
+The project is fully open source, backed by a great team, Sidero Labs, and has a very helpful documentation and community.
+
+---
+
+## The Conference
+
+The main headline around the conference was Sidero Labs' acquisition by Yardi Systems, announced a few weeks earlier. A big real-estate software company buying a niche open-source software startup? The news raised concerns in the community, mine included. We will address these concerns in the following sections.
+
+### Will Talos become commercial?
+
+Sidero Labs' president, Steve Francis, and Yardi's founder, Anant Yardi, both reassured the community: Talos Linux stays open source and free to use, for homelabbers as well as for companies. Omni is a different story: it is source-available under the Business Source License (BSL), free to self-host for personal use, with a contract required for production.
+
+So why this acquisition? Yardi Systems operates thousands of virtual machines to deploy its solutions worldwide. The company has been a longtime VMware customer and saw the price increases, so I guess acquiring Sidero Labs, a promising infrastructure software company with innovative solutions, is a strategic move for Yardi. That said, it's fair to expect some parts of Sidero Labs' solutions to go commercial.
+
+### Talks and featured products
+
+#### Talos Omni
+
+The Day 1 talks featured Omni, a community favorite in the Talos ecosystem. Omni is Sidero Labs' management platform for Talos clusters. It offers an API, a CLI and a GUI to create, upgrade and operate Kubernetes clusters on Talos. It's available as SaaS or self-hosted. Personally, I self-host it to manage my homelab cluster, and I've been having a blast :)
+
+The good news for all the homelabbers: the Omni Hobby tier on the SaaS, for up to 10 nodes and two users, is now free.
+
+#### Talos Hypervisor
+
+Sidero Labs demoed Talos Hypervisor: virtual machines directly on Talos Linux, without Kubernetes or KubeVirt. It is built on the usual libvirt and QEMU/KVM stack, shipped as a Talos system extension, and the VMs are managed declaratively through YAML configuration, like everything else in Talos.
+
+In the demo, Justin Garrison, Field CTO at Sidero, brought a physical hypervisor and booted a Windows XP VM on Talos :) Talos Hypervisor is in alpha in Talos Linux 1.15, with general availability planned for December 2026, and stays open source under the MPL-2.0 license. It is also the foundation of Talos Director.
+
+<Gallery
+  images={[
+    {
+      src: "/01-taloscon-2026-hypervisor-demo.webp",
+      alt: "Justin Garrison on stage at TalosCon 2026, with the physical hypervisor on the podium",
+    },
+    {
+      src: "/01-taloscon-2026-hypervisor-winxp.webp",
+      alt: "A Windows XP VM running on Talos Hypervisor, opened with talosctl hv vnc",
+    },
+  ]}
+/>
+
+#### Talos Director
+
+During Day 1, Sidero Labs introduced Talos Director: a new platform to manage data center resources. Positioned as an alternative to solutions like VMware vCenter or Nutanix Prism, Director covers virtual machine management, live migration, high availability, autoscaling, network micro-segmentation, and more, with Omni as the backbone for Kubernetes cluster operations.
+
+It is not slideware: Yardi already runs it in production, and the live demo showed it managing a large fleet of clusters. Talos Director is in limited availability, with general availability planned for January 2027.
+
+One of the biggest questions was: will Director be available to self-host, as open-source software with some kind of free tier? There is no answer as of today.
+
+#### Talos Containers
+
+During an evening workshop, the Sidero team introduced us to a new Talos feature that I personally found great: Talos Containers. We are gaining the ability to run containers directly, without Kubernetes. This targets a variety of use cases, such as single-node sites, where a full Kubernetes control plane is just overhead. Containers are managed through the same API.
+
+Talos Containers nodes stay declarative and immutable like any Talos machine, and are managed from Omni alongside the Kubernetes clusters, so the whole fleet is handled the same way.
+
+<Gallery images={[{ src: "/01-taloscon-2026-containers.webp", alt: "TalosCon 2026 slide comparing how Kubernetes and Talos Containers go from config to runtime" }]} />
+
+#### Other featured products
+
+- **Talos Cupar:** a commercial platform to run an AI stack on your own infrastructure: "your models, your data, your infrastructure".
+- **Talos Linux for AI:** an open-source variant of Talos for AI workloads, with GPU support, model serving and fine-tuning.
+
+---
+
+## Community
+
+TalosCon 2026 was not only about Sidero: community members, as well as the companies and projects building around Talos, made the conference just as rich.
+
+<Gallery images={[{ src: "/01-taloscon-2026-community.webp", alt: "Sidero's \"Tell Sidero what you think\" boards, covered in attendee sticky notes" }]} />
+
+SimplyBlock is one of the projects that caught my attention, pitching their solution as "Storage for Talos". It is a distributed, software-defined block storage engine for Kubernetes, served over NVMe/TCP, and plugged into Kubernetes through its CSI driver. It fits the Talos model well: it runs without modifying the Talos OS itself, and the setup is even covered in the [official Talos documentation](https://docs.siderolabs.com/kubernetes-guides/csi/simplyblock-storage). I still have to compare it with what I'm personally running in my homelab: Longhorn vs SimplyBlock.
+
+Other cool projects had stands, such as KubeSolo by Portainer, for running ultra-lightweight Kubernetes on edge devices (because why not :D).
+
+---
+
+## Takeaways
+
+TalosCon 2026 was about the future of Talos and Sidero Labs, what to expect in 2027, and how Talos surfs the AI wave.
+
+Talos stays open source, and its ecosystem keeps growing, from Omni and Talos Hypervisor to Talos Director and Talos Containers. I came back with a list of things to try in my homelab. I'm already looking forward to the next edition.
+
+<Gallery images={[{ src: "/01-taloscon-2026.webp", alt: "TalosCon 2026 swag: tote bag, stickers and Talos Linux socks" }]} />
+
+---
+
+Thank you for reading! If you enjoyed this article, the best way to support me is to share it and leave a comment or a reaction below. I'd love to hear your thoughts, whether you already run Talos or are just curious about it.
+
+<p class="flex flex-wrap gap-x-6 gap-y-2">[<Icon name="logos:github-icon" title="GitHub" class="mr-1.5 inline-block align-[-0.125em] dark:invert" />rafikbahri](https://github.com/rafikbahri) [<Icon name="logos:linkedin-icon" title="LinkedIn" class="mr-1.5 inline-block align-[-0.125em]" />Rafik Bahri](https://www.linkedin.com/in/rafik-bahri)</p>

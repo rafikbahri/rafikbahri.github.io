@@ -3,11 +3,14 @@ import sitemap from "@astrojs/sitemap";
 import mdx from "@astrojs/mdx";
 import pagefind from "astro-pagefind";
 import tailwindcss from "@tailwindcss/vite";
+import icon from "astro-icon";
+import { rehypeHeadingIds } from "@astrojs/markdown-remark";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://rafikbahri.com",
-  integrations: [sitemap(), mdx(), pagefind()],
+  integrations: [sitemap(), mdx(), pagefind(), icon()],
   vite: {
     plugins: [tailwindcss()],
     build: {
@@ -23,5 +26,22 @@ export default defineConfig({
     shikiConfig: {
       theme: "css-variables",
     },
+    // Heading IDs must exist before the autolink plugin adds the "#" links
+    rehypePlugins: [
+      rehypeHeadingIds,
+      [
+        rehypeAutolinkHeadings,
+        {
+          behavior: "append",
+          // data-pagefind-ignore keeps the "#" out of the search index and excerpts
+          properties: {
+            className: ["heading-anchor"],
+            ariaLabel: "Link to this section",
+            dataPagefindIgnore: true,
+          },
+          content: { type: "text", value: "#" },
+        },
+      ],
+    ],
   },
 });
