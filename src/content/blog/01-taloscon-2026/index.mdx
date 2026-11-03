@@ -1,13 +1,16 @@
 ---
 title: "TalosCon 2026"
-description: "Two days in Amsterdam with Talos Linux, Omni, Director, Cupar and Talos AI."
+description: "Talos future and featured products"
 date: "2026-10-25"
 tags: ["talos", "kubernetes", "conference"]
 image: "/01-taloscon-2026.webp"
 draft: true
 ---
 
-![TalosCon 2026 swag: tote bag, stickers and Talos Linux socks](/01-taloscon-2026.webp)
+import Gallery from "@/components/Gallery.astro";
+import { Icon } from "astro-icon/components";
+
+<Gallery images={[{ src: "/01-taloscon-2026-venue.webp", alt: "The TalosCon 2026 banner at the venue entrance in Amsterdam" }]} />
 
 ## Introduction
 
@@ -54,6 +57,19 @@ Sidero Labs demoed Talos Hypervisor: virtual machines directly on Talos Linux, w
 
 In the demo, Justin Garrison, Field CTO at Sidero, brought a physical hypervisor and booted a Windows XP VM on Talos :) Talos Hypervisor is in alpha in Talos Linux 1.15, with general availability planned for December 2026, and stays open source under the MPL-2.0 license. It is also the foundation of Talos Director.
 
+<Gallery
+  images={[
+    {
+      src: "/01-taloscon-2026-hypervisor-demo.webp",
+      alt: "Justin Garrison on stage at TalosCon 2026, with the physical hypervisor on the podium",
+    },
+    {
+      src: "/01-taloscon-2026-hypervisor-winxp.webp",
+      alt: "A Windows XP VM running on Talos Hypervisor, opened with talosctl hv vnc",
+    },
+  ]}
+/>
+
 #### Talos Director
 
 During Day 1, Sidero Labs introduced Talos Director: a new platform to manage data center resources. Positioned as an alternative to solutions like VMware vCenter or Nutanix Prism, Director covers virtual machine management, live migration, high availability, autoscaling, network micro-segmentation, and more, with Omni as the backbone for Kubernetes cluster operations.
@@ -64,9 +80,11 @@ One of the biggest questions was: will Director be available to self-host, as op
 
 #### Talos Containers
 
-Talos Linux is gaining the ability to run containers directly, without Kubernetes. It targets single-node sites, like a retail location, a factory floor gateway or a cell site, where a full Kubernetes control plane is just overhead.
+During an evening workshop, the Sidero team introduced us to a new Talos feature that I personally found great: Talos Containers. We are gaining the ability to run containers directly, without Kubernetes. This targets a variety of use cases, such as single-node sites, where a full Kubernetes control plane is just overhead. Containers are managed through the same API.
 
-Those nodes stay declarative and immutable like any Talos machine, and are managed from Omni alongside the Kubernetes clusters, so the whole fleet is handled the same way.
+Talos Containers nodes stay declarative and immutable like any Talos machine, and are managed from Omni alongside the Kubernetes clusters, so the whole fleet is handled the same way.
+
+<Gallery images={[{ src: "/01-taloscon-2026-containers.webp", alt: "TalosCon 2026 slide comparing how Kubernetes and Talos Containers go from config to runtime" }]} />
 
 #### Other featured products
 
@@ -75,24 +93,28 @@ Those nodes stay declarative and immutable like any Talos machine, and are manag
 
 ---
 
-## Talks
-
-_TODO: The talks that stood out (title, speaker), and one takeaway from each._
-
----
-
 ## Community
 
-_TODO: The hallway track, people you met, the venue, and the swag._
+TalosCon 2026 was not only about Sidero: community members, as well as the companies and projects building around Talos, made the conference just as rich.
+
+<Gallery images={[{ src: "/01-taloscon-2026-community.webp", alt: "Sidero's \"Tell Sidero what you think\" boards, covered in attendee sticky notes" }]} />
+
+SimplyBlock is one of the projects that caught my attention, pitching their solution as "Storage for Talos". It is a distributed, software-defined block storage engine for Kubernetes, served over NVMe/TCP, and plugged into Kubernetes through its CSI driver. It fits the Talos model well: it runs without modifying the Talos OS itself, and the setup is even covered in the official Talos documentation. I still have to compare it with what I'm personally running in my homelab: Longhorn vs SimplyBlock.
+
+Other cool projects had stands, such as KubeSolo by Portainer, for running ultra-lightweight Kubernetes on edge devices (because why not :D).
 
 ---
 
 ## Takeaways
 
-_TODO: What you will apply in your own work, and what you want to try next._
+TalosCon 2026 was about the future of Talos and Sidero Labs, what to expect in 2027, and how Talos surfs the AI wave.
+
+Talos stays open source, and its ecosystem keeps growing, from Omni and Talos Hypervisor to Talos Director and Talos Containers. I came back with a list of things to try in my homelab. I'm already looking forward to the next edition.
+
+<Gallery images={[{ src: "/01-taloscon-2026.webp", alt: "TalosCon 2026 swag: tote bag, stickers and Talos Linux socks" }]} />
 
 ---
 
-## Conclusion
+Thank you for reading! If you enjoyed this article, the best way to support me is to share it, and to leave a comment or a reaction below. I'd love to hear your thoughts, whether you already run Talos or are just curious about it.
 
-_TODO: Would you go again, and who should attend TalosCon 2027._
+<p class="flex flex-wrap gap-x-6 gap-y-2">[<Icon name="logos:github-icon" title="GitHub" class="mr-1.5 inline-block align-[-0.125em] dark:invert" />rafikbahri](https://github.com/rafikbahri) [<Icon name="logos:linkedin-icon" title="LinkedIn" class="mr-1.5 inline-block align-[-0.125em]" />Rafik Bahri](https://www.linkedin.com/in/rafik-bahri)</p>
