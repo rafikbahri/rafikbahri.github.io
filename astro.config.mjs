@@ -33,7 +33,12 @@ export default defineConfig({
         rehypeAutolinkHeadings,
         {
           behavior: "append",
-          properties: { className: ["heading-anchor"], ariaLabel: "Link to this section" },
+          // data-pagefind-ignore keeps the "#" out of the search index and excerpts
+          properties: {
+            className: ["heading-anchor"],
+            ariaLabel: "Link to this section",
+            dataPagefindIgnore: true,
+          },
           content: { type: "text", value: "#" },
         },
       ],

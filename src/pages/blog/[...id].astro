@@ -21,8 +21,9 @@ export async function getStaticPaths() {
 }
 type Props = CollectionEntry<"blog">;
 
+// Same rule as getStaticPaths, so prev/next links also work on draft previews
 const posts = (await getCollection("blog"))
-  .filter((post) => !post.data.draft)
+  .filter((post) => import.meta.env.DEV || !post.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
 function getNextPost() {
