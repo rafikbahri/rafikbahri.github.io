@@ -83,6 +83,19 @@
     @apply text-black dark:text-white;
     @apply decoration-black/50 dark:decoration-white/50;
   }
+  article a.heading-anchor {
+    @apply ml-2 text-black/30 no-underline dark:text-white/30;
+  }
+  /* On devices with a mouse, only show the "#" when hovering the heading */
+  @media (hover: hover) {
+    article a.heading-anchor {
+      @apply opacity-0;
+    }
+    article :is(h2, h3, h4, h5, h6):hover a.heading-anchor,
+    article a.heading-anchor:focus-visible {
+      @apply opacity-100;
+    }
+  }
 }
 
 .animate {
