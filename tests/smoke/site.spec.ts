@@ -85,6 +85,25 @@ test("the TalosCon 2026 article is published", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("search finds the TalosCon 2026 article", async ({ page }) => {
+  await page.goto("/");
+  const urls = await page.evaluate(async () => {
+    // The index is generated at build time, so load it from the served site
+    const pagefindUrl = "/pagefind/pagefind.js";
+    const pagefind = await import(pagefindUrl);
+    const search = await pagefind.search("TalosCon");
+    return Promise.all(
+      search.results.map(
+        async (result: { data: () => Promise<{ url: string }> }) =>
+          (await result.data()).url,
+      ),
+    );
+  });
+  expect(urls).toContainEqual(
+    expect.stringContaining("/blog/01-taloscon-2026"),
+  );
+});
+
 for (const path of ["/blog/", "/projects/"]) {
   test(`${path} is reachable`, async ({ page }) => {
     const response = await page.goto(path);
