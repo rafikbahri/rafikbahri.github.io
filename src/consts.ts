@@ -28,9 +28,14 @@ export const SOCIALS: Socials = [
   {
     NAME: "GitHub",
     HREF: "https://github.com/rafikbahri",
+    LABEL: "rafikbahri",
+    ICON: "logos:github-icon",
+    INVERT_IN_DARK: true,
   },
   {
     NAME: "LinkedIn",
     HREF: "https://www.linkedin.com/in/rafik-bahri",
+    LABEL: "Rafik Bahri",
+    ICON: "logos:linkedin-icon",
   },
 ];

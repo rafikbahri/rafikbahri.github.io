@@ -14,4 +14,10 @@ export type Metadata = {
 export type Socials = {
   NAME: string;
   HREF: string;
+  // Account ID shown next to the logo, e.g. "rafikbahri"
+  LABEL: string;
+  // Iconify icon name, e.g. "logos:github-icon"
+  ICON: string;
+  // Invert the logo in dark mode (for black logos)
+  INVERT_IN_DARK?: boolean;
 }[];

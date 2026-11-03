@@ -4,6 +4,7 @@ import Container from "@components/Container.astro";
 import { SITE, HOME, SOCIALS } from "@consts";
 import ArrowCard from "@components/ArrowCard.astro";
 import Link from "@components/Link.astro";
+import { Icon } from "astro-icon/components";
 import { getCollection } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 
@@ -38,7 +39,11 @@ const projects: CollectionEntry<"projects">[] = (
               <p>
                 This is my personal blog, where I post about intersting topics I work/worked on, tech news, and more.
                 Feel free to take a look at my <Link external href="https://github.com/rafikbahri"
-                  >GitHub</Link>.
+                  ><Icon
+                    name="logos:github-icon"
+                    title="GitHub"
+                    class="mr-1.5 inline-block align-[-0.125em] dark:invert"
+                  />rafikbahri</Link>.
               </p>
             </span>
           </article>
@@ -87,32 +92,27 @@ const projects: CollectionEntry<"projects">[] = (
           <article>
             <p>
               If you want to get in touch with me about something or just to say
-              hi, reach out on social media or send me an email.
+              hi, reach out on social media.
             </p>
           </article>
-          <ul class="not-prose flex flex-wrap gap-2">
+          <ul class="not-prose flex flex-wrap gap-x-6 gap-y-2">
             {
               SOCIALS.map((SOCIAL) => (
-                <li class="flex gap-x-2 text-nowrap">
+                <li class="text-nowrap">
                   <Link
                     href={SOCIAL.HREF}
                     external
                     aria-label={`${SITE.TITLE} on ${SOCIAL.NAME}`}
                   >
-                    {SOCIAL.NAME}
+                    <Icon
+                      name={SOCIAL.ICON}
+                      title={SOCIAL.NAME}
+                      class={`mr-1.5 inline-block align-[-0.125em]${SOCIAL.INVERT_IN_DARK ? " dark:invert" : ""}`}
+                    />{SOCIAL.LABEL}
                   </Link>
-                  {"/"}
                 </li>
               ))
             }
-            <li class="line-clamp-1">
-              <Link
-                href={`mailto:${SITE.EMAIL}`}
-                aria-label={`Email ${SITE.TITLE}`}
-              >
-                {SITE.EMAIL}
-              </Link>
-            </li>
           </ul>
         </section>
       </div>
