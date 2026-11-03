@@ -1,5 +1,7 @@
 # build output
 dist/
+# Pagefind index is generated into dist/pagefind/ at build time
+public/pagefind/
 # generated types
 .astro/
 

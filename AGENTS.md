@@ -64,7 +64,7 @@ Key points:
 - Entries with `draft: true` are left out of production builds everywhere: their page, the home and blog lists, tags, prev/next navigation, RSS and the sitemap. In `npm run dev` they are shown everywhere except RSS, so drafts can be previewed. The rule is `import.meta.env.DEV || !post.data.draft`; keep RSS on `!post.data.draft` only.
 - Article headings (`##` and below) get a `#` link to themselves, added at build time by `rehype-autolink-headings` (`astro.config.mjs`). The link carries `data-pagefind-ignore` so the `#` stays out of search results, and the table of contents (`src/components/TableOfContents.astro`, closed by default) reads the heading text without it.
 - Article comments use [Giscus](https://giscus.app) (`src/components/Giscus.astro`): one GitHub Discussion per article in the "Announcements" category of `rafikbahri/rafikbahri.github.io`, matched by page path. This requires Discussions enabled on the repo and the Giscus GitHub App installed on it; otherwise the widget shows "github.com refused to connect".
-- The search index is generated at build time by `astro-pagefind` into `dist/pagefind/`. `public/pagefind/` is a stale generated leftover; do not edit it by hand.
+- The search index is generated at build time by `astro-pagefind` into `dist/pagefind/`. Never commit an index to `public/pagefind/` (it is git-ignored): `npm run dev` serves `/pagefind/` from `dist/` and falls back to `public/`, so a committed index makes search return stale results. In dev, search uses the index from the last `npm run build`, so rebuild to see new articles in it.
 
 ## Deployment
 
@@ -230,4 +230,4 @@ Deleted URLs fall through to the site's `404` page. No redirects are configured;
 ## Known gaps
 
 - `README.md` describes the old AWS S3 / GitHub Pages hosting and is outdated.
-- `public/` still contains unused theme demo images (`astro-*.jpg`, `deploy_*.svg`, ...) and a committed `public/pagefind/` index.
+- `public/` still contains unused theme demo images (`astro-*.jpg`, `deploy_*.svg`, ...).
