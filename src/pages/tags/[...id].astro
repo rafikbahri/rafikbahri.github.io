@@ -6,7 +6,11 @@ import ArrowCard from "@components/ArrowCard.astro";
 import BackToPrevious from "@components/BackToPrevious.astro";
 
 export async function getStaticPaths() {
-  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  // Drafts get tag pages in dev so they can be previewed, never in production builds
+  const posts = await getCollection(
+    "blog",
+    ({ data }) => import.meta.env.DEV || !data.draft,
+  );
 
   // Get unique tags
   const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))];
@@ -29,12 +33,12 @@ const sortedPosts = posts.sort(
 );
 ---
 
-<Layout title={`Tag: ${id}`} description={`Posts with the tag: ${id}`}>
+<Layout title={`Tag: #${id}`} description={`Posts with the tag: #${id}`}>
   <Container>
     <div class="space-y-10" data-pagefind-ignore>
       <BackToPrevious href="/tags"> All tags </BackToPrevious>
       <h1 class="animate font-semibold text-black dark:text-white">
-        Posts tagged with "{id}"
+        Posts tagged with #{id}
       </h1>
       <ul class="animate flex flex-col gap-4">
         {sortedPosts.map((post) => <ArrowCard entry={post} />)}
