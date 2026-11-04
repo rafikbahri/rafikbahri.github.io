@@ -6,14 +6,14 @@ resource "cloudflare_pages_project" "blog" {
   deployment_configs = {
     production = {
       environment_variables = {
-        NODE_VERSION = "25"
+        NODE_VERSION = "24"
       }
       fail_open = false
     }
     
     preview = {
       environment_variables = {
-        NODE_VERSION = "25"
+        NODE_VERSION = "24"
       }
       fail_open = false
     }
